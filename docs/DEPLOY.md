@@ -1,74 +1,72 @@
-# Deploy
+## Deploy: M365 Security Alerts → Teams
 
-## Prereqs
-- Azure subscription + Microsoft Sentinel workspace (Log Analytics)
-- Teams teamId and channelId (from “Get link to channel” in Teams)
-- Azure CLI logged in (`az login`)
+> Minimal steps to deploy the Logic App(s) that post Microsoft 365/Sentinel alerts into Teams.
 
-# What is workspaceName?
-# It’s your Log Analytics workspace name (not the resource group).
-# Azure Portal -> Log Analytics workspaces -> your workspace -> Overview -> Name.
+### Before you start
+- Azure role: `Contributor` (resource group scope) and access to Microsoft Sentinel workspace.
+- Teams channel where the connector will post.
+- Parameters: resource group name, location, Sentinel workspace ID, Teams team/channel IDs.
 
--------------------------------------------------------------------------------
+<details>
+<summary>Show exact prerequisites</summary>
 
-## Quick steps
+- Entra app registration (if applicable): `App.Read.All`, `ChannelMessage.Send`.
+- Service connection: Managed Identity enabled on the Logic App.
+- Optional: Create a dedicated resource group (e.g., `rg-sec-alerts-prod-uks`).
 
-1) Create a resource group
-az group create -n rg-sec-alerts -l westeurope
+</details>
 
-2) Set Teams IDs
-# Open this file locally and fill in your Teams IDs:
-#   playbooks/notify-teams/parameters.example.json
-# Set:
-#   "teamId":     "<YOUR-TEAM-ID>"
-#   "channelId":  "<YOUR-CHANNEL-ID>"
+### 1) Deploy the resources
+1. **Open** the template in Azure Portal:  
+   `Deployments → Create → Template (ARM/Bicep)`
+2. **Upload** `./samples/azuredeploy.json` (or Bicep) and **Review + create**.
+3. **Fill parameters**:
+   - `workspaceName`: `<your-sentinel>`
+   - `logicAppName`: `la-alerts-to-teams`
+   - `location`: `UK South`
+4. **Create** the deployment and wait for `Succeeded`.
 
-3) Deploy the Logic App (Managed Identity)
-az deployment group create -g rg-sec-alerts \
-  --template-file playbooks/notify-teams/azuredeploy.json \
-  --parameters @playbooks/notify-teams/parameters.example.json
+<details>
+<summary>CLI alternative</summary>
 
-4) Grant Microsoft Graph permissions to the Logic App’s Managed Identity
-# Portal steps (Entra ID):
-# - Entra ID -> Enterprise applications -> find your Logic App (e.g., pbk-notify-teams)
-# - Add Application permissions:
-#     ChannelMessage.Send
-#     Team.ReadBasic.All   (or Group.Read.All)
-# - Click “Grant admin consent”
+```bash
+az group create -n rg-sec-alerts-prod-uks -l uksouth
+az deployment group create \
+  -g rg-sec-alerts-prod-uks \
+  -f ./samples/azuredeploy.json \
+  -p workspaceName=<your-sentinel> logicAppName=la-alerts-to-teams location="UK South"
+```
+</details>
 
-5) (Optional) Deploy the Sentinel analytics rule (risky sign-ins / risky users)
-az deployment group create -g rg-sec-alerts \
-  --template-file playbooks/notify-teams/analytics-rule-risky-signins.json \
-  --parameters workspaceName=<YOUR-LAW-NAME>
+### 2) Connect to Teams
+1. Go to Logic Apps → `la-alerts-to-teams` → Workflows → `notify-teams`.
+2. Open the Teams connector action and **Sign in** / select the **Team** and **Channel**.
+3. Save the workflow.
 
-# Replace <YOUR-LAW-NAME> with your Log Analytics workspace name (e.g., law-sec-prod)
+<details>
+<summary>Find Team/Channel IDs</summary>
 
-6) Link the playbook with an Automation rule (in the Sentinel portal)
-# Portal steps (Microsoft Sentinel):
-# - Microsoft Sentinel -> your workspace -> Automation -> Create
-# - When: Alert created
-# - (Optional) Condition: Provider name equals "Azure Active Directory Identity Protection"
-# - Action: Run playbook -> select notify-teams
-# - Save
+- In Teams: **…** next to the team → **Get link to team** (ID in the URL).  
+- Or use Graph/CLI if you prefer.
 
-7) Validate
-# - Trigger a test “risky sign-in” / Identity Protection alert (or wait for a real one)
-# - Check Logic App “Runs history”
-# - Confirm the Teams message arrives in the target channel
+</details>
 
--------------------------------------------------------------------------------
+### 3) Wire to Sentinel alerts
+1. In **Microsoft Sentinel** → **Analytics**, create/enable alert rules to trigger the playbook.
+2. For each rule, set **Automated response** → **Add playbook** → select `notify-teams`.
+3. Save and enable the rule.
 
-## Tips
+### 4) Test
+1. Run the workflow with a sample payload (Logic App **Run Trigger**).
+2. Verify a message appears in Teams.
+3. If missing fields, check the **Runs history** → **Inputs/Outputs** for mapping errors.
 
-# Preview a deployment (“what-if”)
-az deployment group what-if -g rg-sec-alerts \
-  --template-file playbooks/notify-teams/azuredeploy.json \
-  --parameters @playbooks/notify-teams/parameters.example.json
+### 5) Tuning (optional)
+- **Rate-limit**: add a trigger concurrency cap (e.g., `1`) to avoid Teams payload bursts.  
+- **Payload size**: cap list lengths (e.g., 10–20 items) to stay below the Teams 28 KB limit.  
+- **Logging**: enable diagnostic logs → Log Analytics → `WorkflowRuntime` table.  
+- **Security**: restrict Managed Identity and connector permissions to least privilege.
 
-# Where to find Team/Channel IDs
-# - In Teams, open the channel, click “…” -> Get link to channel
-# - The URL contains both the teamId and channelId
+---
 
-# If you are to get a 403 from Graph:
-# - Re-check the Application permissions above
-# - Ensure admin consent is granted on the Enterprise app entry for your Logic App
+✅ **Done!** Your Logic App should now post Sentinel alerts directly into your Teams channel.
