@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": { "type": "string" },
+    "ruleName": { "type": "string", "defaultValue": "AR - Risky sign-ins / risky users" },
+    "severity": { "type": "string", "defaultValue": "High" },
+    "queryPeriod": { "type": "string", "defaultValue": "PT15M" },
+    "queryFrequency": { "type": "string", "defaultValue": "PT5M" },
+    "suppressionDuration": { "type": "string", "defaultValue": "PT1H" },
+    "suppressionEnabled": { "type": "bool", "defaultValue": false }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "apiVersion": "2023-02-01-preview",
+      "name": "[format('{0}/Microsoft.SecurityInsights/{1}', parameters('workspaceName'), 'ar-risky-signins')]",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "[parameters('ruleName')]",
+        "enabled": true,
+        "severity": "[parameters('severity')]",
+        "query": "SecurityAlert\n| where ProviderName =~ 'Azure Active Directory Identity Protection'\n| where AlertName has_any ('Risky sign-in','User at risk','Risky users')",
+        "queryFrequency": "[parameters('queryFrequency')]",
+        "queryPeriod": "[parameters('queryPeriod')]",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "[parameters('suppressionDuration')]",
+        "suppressionEnabled": "[parameters('suppressionEnabled')]",
+        "eventGroupingSettings": { "aggregationKind": "SingleAlert" },
+        "tactics": [ "InitialAccess", "CredentialAccess" ],
+        "techniques": [],
+        "customDetails": {
+          "ProviderName": "ProviderName",
+          "AlertName": "AlertName"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "lookbackDuration": "PT2H",
+            "reopenClosedIncident": false,
+            "matchingMethod": "AnyAlert",
+            "groupByAlertDetails": [],
+            "groupByEntities": [ "Account" ]
+          }
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "Risky user/sign-in detected - {{AlertName}}",
+          "alertDescriptionFormat": "Azure AD Identity Protection alert ({{ProviderName}})."
+        },
+        "sentinelEntitiesMappings": []
+      }
+    }
+  ]
+}
