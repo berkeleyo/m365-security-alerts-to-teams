@@ -6,35 +6,40 @@
 - Azure CLI logged in (`az login`)
 
 ## Quick steps
-1. Create RG:
-   az group create -n rg-sec-alerts -l westeurope
 
-2. Edit playbooks/mi-teams-alerts/parameters.example.json with your teamId and channelId.
+1. Create RG:
+   ```bash
+   az group create -n rg-sec-alerts -l westeurope
+   ```
+
+2. Edit `playbooks/notify-teams/parameters.example.json` with your **teamId** and **channelId**.
 
 3. Deploy the Logic App (Managed Identity):
+   ```bash
    az deployment group create -g rg-sec-alerts \
-     --template-file playbooks/mi-teams-alerts/azuredeploy.json \
-     --parameters @playbooks/mi-teams-alerts/parameters.example.json
+     --template-file playbooks/notify-teams/azuredeploy.json \
+     --parameters @playbooks/notify-teams/parameters.example.json
+   ```
 
-4. Grant Microsoft Graph permissions to the Logic App’s Managed Identity:
-   - Entra ID → Enterprise applications → find the Logic App (e.g., pbk-mi-teams-alerts)
-   - Add Application permissions:
-       - ChannelMessage.Send
-       - Team.ReadBasic.All (or Group.Read.All)
-   - Click Grant admin consent.
+4. Grant Microsoft Graph permissions to the Logic App’s **Managed Identity**:
+   - In Entra ID → **Enterprise applications**, find the Logic App (e.g., `pbk-notify-teams`)
+   - Add **Application permissions**:
+     - `ChannelMessage.Send`
+     - `Team.ReadBasic.All` (or `Group.Read.All`)
+   - Click **Grant admin consent**
 
-5. Deploy the Sentinel analytics rule:
+5. (Optional) Deploy a Sentinel analytics rule:
+   ```bash
    az deployment group create -g rg-sec-alerts \
-     --template-file playbooks/mi-teams-alerts/analytics-rule-risky-signins.json \
+     --template-file playbooks/notify-teams/analytics-rule-risky-signins.json \
      --parameters workspaceName=<YOUR-LAW-NAME>
+   ```
 
-6. Link the playbook via an automation rule:
-   logicId=$(az resource show -g rg-sec-alerts -n pbk-mi-teams-alerts --resource-type "Microsoft.Logic/workflows" --query id -o tsv)
-   az deployment group create -g rg-sec-alerts \
-     --template-file playbooks/mi-teams-alerts/automation-rule.json \
-     --parameters workspaceName=<YOUR-LAW-NAME> logicAppResourceId="$logicId"
+6. Link the playbook via an **automation rule** in Sentinel:
+   - Go to Sentinel → Automation → Create rule.
+   - Set “When incident created from analytics rule = *Risky Sign-ins*”
+   - Action: **Run playbook → notify-teams**
 
-## Notes
-- Get teamId/channelId from Teams → channel menu (…) → Get link to channel (the URL contains both IDs).
-- No secrets or webhooks are stored; all calls use the Logic App’s Managed Identity.
-- If posting fails with 403, double-check the Graph Application permissions and admin consent.
+7. Validate:
+   - Trigger a risky sign-in test event.
+   - Confirm Teams notification appears with risk details.
