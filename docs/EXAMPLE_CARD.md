@@ -1,37 +1,68 @@
-# Example Adaptive Card (redacted)
-
-This is a safe, redacted example of the two-section card your workflow posts.
-
-```json
-{{ read_file('EXAMPLE_CARD.json') }}
-
-> Note: MkDocs Material supports `read_file()` by default when `mkdocs-material` is installed. If it doesn’t render, we’ll just keep the JSON file (below) and you can paste the JSON inline.
-
-## A4) GitHub Actions to build & publish the docs site
-> Add this as `.github/workflows/docs.yml`. It builds MkDocs and publishes to a `gh-pages` branch.
-
-```yaml
-name: Build docs site
-
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-  workflow_dispatch:
-
-jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-      - name: Install MkDocs + theme
-        run: |
-          python -m pip install --upgrade pip
-          pip install mkdocs mkdocs-material
-      - name: Deploy to gh-pages
-        run: mkdocs gh-deploy --force
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Risky users (updates)",
+      "weight": "Bolder",
+      "size": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "spacing": "None",
+      "isSubtle": true,
+      "text": "Scanning window: 2025-10-01T00:00:00Z → 2025-10-01T12:00:00Z • Generated: 2025-10-01T12:00:05Z"
+    },
+    {
+      "type": "Container",
+      "style": "attention",
+      "items": [
+        {
+          "type": "FactSet",
+          "facts": [
+            { "title": "User", "value": "user@example.org" },
+            { "title": "Risk", "value": "high" },
+            { "title": "State", "value": "atRisk" },
+            { "title": "Detail", "value": "none" },
+            { "title": "UTC", "value": "2025-10-01T11:56:24Z" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "Risky sign-ins (updates)",
+      "weight": "Bolder",
+      "size": "Medium",
+      "spacing": "Large"
+    },
+    {
+      "type": "Container",
+      "style": "warning",
+      "items": [
+        {
+          "type": "FactSet",
+          "facts": [
+            { "title": "User", "value": "another.user@example.org" },
+            { "title": "Risk", "value": "medium" },
+            { "title": "State", "value": "atRisk" },
+            { "title": "Detail", "value": "none" },
+            { "title": "IP", "value": "203.0.113.10" },
+            { "title": "Location", "value": "[REDACTED]" },
+            { "title": "UTC", "value": "2025-10-01T11:39:53Z" },
+            { "title": "Local (Europe/London)", "value": "2025-10-01T12:39:53Z" }
+          ]
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "Open Entra (filtered)",
+      "url": "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/IdentityRiskMenuBlade/~/Users"
+    }
+  ]
+}
