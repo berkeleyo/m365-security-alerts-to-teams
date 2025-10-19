@@ -1,31 +1,27 @@
-# M365 Security Alerts → Microsoft Teams (Managed Identity)
+# M365 Security Alerts → Teams
 
-Logic Apps + Microsoft Sentinel playbooks that post **risky sign-ins / risky users** (and other alerts) to **Microsoft Teams** using a **Managed Identity** — no webhooks, no secrets.
+Posts Microsoft Entra / Microsoft 365 security signals to Microsoft Teams using **Azure Logic Apps** and **Managed Identity** (no webhooks or static secrets).
 
-- ✅ **Secure by design:** Graph API with Entra ID *Application permissions* granted to the Logic App’s managed identity  
-- ✅ **Repeatable:** ARM/Bicep-style deployment via `az deployment group create`  
-- ✅ **Clean repo:** No tenant/org names or secrets committed
+## What it posts
+- **Risky users (updates)** — newly detected or updated risky users.
+- **Risky sign-ins (updates)** — newly detected or updated risky sign-ins.
 
----
+**Defaults**
+- Filters to **Medium** and **High** risk.
+- Sends **one concise Adaptive Card per run** (not one message per item).
+- Supports **“no updates → no post.”**
+- Caps list sizes to avoid the Teams ~28 KB payload limit.
 
-## What you get
+## Quick links
+- 🚀 **Deploy:** [`docs/DEPLOY.md`](docs/DEPLOY.md)  
+- 🛠️ **Operate/Runbook:** [`docs/OPERATE.md`](docs/OPERATE.md)  
+- 🔐 **Security model:** [`docs/SECURITY.md`](docs/SECURITY.md)  
+- 🧪 **Example Adaptive Card (redacted):** [`docs/EXAMPLE_CARD.md`](docs/EXAMPLE_CARD.md)
 
-- **Playbook:** `notify-teams` – sends a rich message to a specific Team/Channel
-- **Sample rule:** Sentinel analytics rule for Risky sign-ins / users (optional)
-- **Docs:** step-by-step **deploy**, **operate**, and **troubleshoot**
+## Why this approach?
+- **Secure by default:** Managed Identity means no static secrets/webhooks.
+- **Noise control:** single summarized card per run, concurrency cap = 1.
+- **Simple operations:** idempotent deployment; easy rollback by disabling the workflow.
 
-> If you want to deploy right away, go to **[docs/DEPLOY.md](docs/DEPLOY.md)**.
-
----
-
-## How it works (flow)
-
-1. Microsoft Sentinel (or AAD Identity Protection) raises an alert/incident  
-2. Sentinel automation rule triggers the **`notify-teams`** Logic App  
-3. The Logic App uses its **Managed Identity** to call **Microsoft Graph**  
-4. A formatted card is posted into your Teams channel
-
----
-
-## Repository layout
-
+## License
+[MIT](LICENSE)
