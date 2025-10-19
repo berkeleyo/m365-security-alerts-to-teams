@@ -1,8 +1,5 @@
-.DS_Store
-*.log
-.vscode/
-.idea/
-__pycache__/
-*.zip
-bin/
-out/
+# local stuff
+*.local.json
+*.secrets.json
+.venv/
+site/
