@@ -1,8 +1,45 @@
-name: ARM Lint
-on: [push]
+name: Validate ARM/Bicep templates
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "**/*.bicep"
+      - "**/*.json"
+      - ".github/workflows/arm-lint.yml"
+  pull_request:
+    paths:
+      - "**/*.bicep"
+      - "**/*.json"
+
+permissions:
+  contents: read
+
 jobs:
-  lint:
+  validate-bicep:
+    if: ${{ hashFiles('**/*.bicep') != '' }}
     runs-on: ubuntu-latest
+    name: Build all Bicep files
     steps:
       - uses: actions/checkout@v4
-      - run: echo lint
+      - uses: Azure/setup-bicep@v2
+      - name: bicep build
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t FILES < <(git ls-files '*.bicep')
+          for f in "${FILES[@]}"; do
+            echo "Building: $f"
+            bicep build "$f"
+          done
+
+  validate-arm:
+    if: ${{ hashFiles('**/*.json') != '' }}
+    runs-on: ubuntu-latest
+    name: ARM Template Toolkit
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ARM-TTK
+        uses: docker://mcr.microsoft.com/arm-ttk:latest
+        with:
+          args: test /github/workspace
