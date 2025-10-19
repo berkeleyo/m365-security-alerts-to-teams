@@ -1,3 +1,9 @@
+# Example Adaptive Card (redacted)
+
+This example shows the two sections your Logic App posts in Teams — “Risky users” and “Risky sign-ins”.
+All values below are placeholders and safe to commit publicly.
+
+```json
 {
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
