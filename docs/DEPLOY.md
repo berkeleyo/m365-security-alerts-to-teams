@@ -69,6 +69,6 @@ az deployment group what-if -g rg-sec-alerts \
 # - In Teams, open the channel, click “…” -> Get link to channel
 # - The URL contains both the teamId and channelId
 
-# If you get 403 from Graph:
+# If you are to get a 403 from Graph:
 # - Re-check the Application permissions above
 # - Ensure admin consent is granted on the Enterprise app entry for your Logic App
