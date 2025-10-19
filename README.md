@@ -1,4 +1,8 @@
 # M365 Security Alerts → Teams
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+![Status: Stable](https://img.shields.io/badge/status-stable-success)
+![Posts: Risky users & sign-ins](https://img.shields.io/badge/posts-risky%20users%20%26%20sign--ins-blue)
+
 
 Posts Microsoft Entra / Microsoft 365 security signals to Microsoft Teams using **Azure Logic Apps** and **Managed Identity** (no webhooks or static secrets).
 
