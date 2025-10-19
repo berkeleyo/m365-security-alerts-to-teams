@@ -1,17 +1,24 @@
-site_name: M365 Security Alerts to Teams
-repo_name: berkeleyo/m365-security-alerts-to-teams
+site_name: M365 Security Alerts → Teams
+site_description: Logic App playbook that posts Microsoft 365 / Sentinel alerts to Microsoft Teams (Managed Identity, no webhooks).
 repo_url: https://github.com/berkeleyo/m365-security-alerts-to-teams
-
 theme:
   name: material
   features:
-    - navigation.sections
-    - toc.integrate
+    - navigation.tabs
     - content.code.copy
-
+    - toc.integrate
 nav:
-  - Home: docs/index.md
-  - Deploy: docs/DEPLOY.md
-  - Operations: docs/OPERATIONS.md
-  - Troubleshooting: docs/TROUBLESHOOTING.md
-  - FAQ: docs/FAQ.md
+  - Overview: index.md
+  - Deploy: DEPLOY.md
+  - Operate: OPERATE.md
+  - Security: SECURITY.md
+  - Example Card (JSON): EXAMPLE_CARD.md
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - codehilite
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/berkeleyo/m365-security-alerts-to-teams
