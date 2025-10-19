@@ -1,9 +1,10 @@
-# M365 Security Alerts to Teams
+# M365 Security Alerts → Teams
 
-Playbooks for Microsoft Sentinel / Microsoft 365 alerts to Microsoft Teams using a Logic App with Managed Identity (no webhooks, no secrets).
+A secure Logic App playbook that posts Microsoft 365 / Microsoft Sentinel alert information into Microsoft Teams using **Managed Identity** (no webhooks or static secrets).
 
-- Secure by design (Graph API + Managed Identity)
-- Extensible (add more analytics and automation rules)
-- No tenant-specific data committed to the repo
+- **Deploy:** fast start guide for Azure (Logic App + Teams connector).
+- **Operate:** tuning, troubleshooting, and “no updates → no post”.
+- **Security:** minimal Graph permissions with Managed Identity.
+- **Example Card:** a redacted Adaptive Card payload for reference.
 
-See the Deploy page to get started.
+👉 Start with **[Deploy](DEPLOY.md)**.
